@@ -69,6 +69,7 @@ def cumulative_pareto_regrets(config,obs_best_arms,save_path):
     else:
         plt.savefig(save_path+ "Cumulative_Pareto_Regrets" +".pdf", dpi = 600)
         plt.savefig(save_path+ "Cumulative_Pareto_Regrets" +".pgf", dpi = 600)
+        plt.savefig(save_path+ "Cumulative_Pareto_Regrets" +".png", dpi = 600)
 
 
 def moving_average(x, w = 60):
@@ -119,141 +120,7 @@ def plot_unfairness(config,obs_best_arms,save_path):
         plt.show()
     else:
         plt.savefig(save_path+ "unfairness.pdf", dpi = 600)
-      
-def plot_cumulative_pareto_regrets(config,obs_best_arms,save_path, strategy = "mean"):
-    plt.clf()
-    
-    T = range(0,config.T)
-    
-    pareto_regrets = np.zeros([len(obs_best_arms), config.T])
-    obs_best_arms = np.asarray(obs_best_arms)
-    for t in T:
-        arms_mean = np.asarray(config.environment.get_arms_mean(t))
-        ParetoFront = np.ones(config.environment.noArms)
-        for j in range(config.environment.noArms):
-            for i in range(config.environment.noArms):
-                if(np.all(arms_mean[j] >= arms_mean[i]) and np.any(arms_mean[j] > arms_mean[i])):
-                    ParetoFront[i] = 0
-        if(config.type == "synthetic" ) :
-            for x, obs in enumerate (obs_best_arms):
-                Pareto_regrets = 0
-                for r in range(config.Rounds):
-                    deltas = [np.linalg.norm( arms_mean[int(obs[r,t])] - arms_mean[i]) for i in range(config.arms["numbers"]) if ParetoFront[i] != 0 ]
-                    if(strategy == "mean"):
-                        deltas = np.mean(deltas)
-                    elif(strategy == "min"):
-                         deltas = np.min(deltas)
-                    else:
-                        error
-                    Pareto_regrets += ( deltas/  config.Rounds )         
-                pareto_regrets[x][t] = Pareto_regrets  
-        else:
-            for x, obs in enumerate (obs_best_arms):
-                Pareto_regrets = 0
-                for r in range(config.Rounds):
-                    deltas = [np.linalg.norm( 1 - arms_mean[int(obs[t])] / arms_mean[i]) for i in range(config.environment.noArms) if ParetoFront[i] != 0 ]
-                    if(strategy == "mean"):
-                        deltas = np.mean(deltas)
-                    elif(strategy == "min"):
-                         deltas = np.min(deltas)
-                    else:
-                        error
-                    Pareto_regrets += ( deltas/  config.Rounds )         
-                pareto_regrets[x][t] = Pareto_regrets                  
-                    
-    for i, obs in enumerate(obs_best_arms):
-        plt.plot(T,(np.cumsum(pareto_regrets[i])) , label=config.algorthims[i].info_str())
-        
-    print_legend = True
-    if(config.environment.Nonstationary ):
-        for point in config.environment.arms_breakpoints:
-            if print_legend:
-                plt.axvline(point, color='red',linestyle='dashed', label='Break point')
-                print_legend = False
-            else:
-                plt.axvline(point, color='red',linestyle='dashed')
-                
-                
-    plt.ylabel("Cumulative Pareto Regrets")
-    plt.legend(loc="upper left", fontsize=6)
-    if(save_path == None):
-        plt.show()
-    else:
-        plt.savefig(save_path+ "cumulative_pareto_regrets_" + strategy +".pdf", dpi = 600)
-
-
-def PGF_plot_cumulative_pareto_regrets(config,obs_best_arms,save_path, strategy = "mean"):
-    import matplotlib as mpl
-    mpl.use('pgf')
-    pgf_with_custom_preamble = {
-    "text.usetex": True,    # use inline math for ticks
-    "pgf.rcfonts": False
-    }
-    mpl.rcParams.update(pgf_with_custom_preamble)
-    import matplotlib.pyplot as plt
-       
-    
-    plt.clf()
-    
-    T = range(0,config.T)
-    
-    pareto_regrets = np.zeros([len(obs_best_arms), config.T])
-    obs_best_arms = np.asarray(obs_best_arms)
-    for t in T:
-        arms_mean = np.asarray(config.environment.get_arms_mean(t))
-        ParetoFront = np.ones(config.environment.noArms)
-        for j in range(config.environment.noArms):
-            for i in range(config.environment.noArms):
-                if(np.all(arms_mean[j] >= arms_mean[i]) and np.any(arms_mean[j] > arms_mean[i])):
-                    ParetoFront[i] = 0
-        if(config.type == "synthetic" ) :
-            for x, obs in enumerate (obs_best_arms):
-                Pareto_regrets = 0
-                for r in range(config.Rounds):
-                    deltas = [np.linalg.norm( arms_mean[int(obs[r,t])] - arms_mean[i]) for i in range(config.arms["numbers"]) if ParetoFront[i] != 0 ]
-                    if(strategy == "mean"):
-                        deltas = np.mean(deltas)
-                    elif(strategy == "min"):
-                         deltas = np.min(deltas)
-                    else:
-                        error
-                    Pareto_regrets += ( deltas/  config.Rounds )         
-                pareto_regrets[x][t] = Pareto_regrets  
-        else:
-            for x, obs in enumerate (obs_best_arms):
-                Pareto_regrets = 0
-                for r in range(config.Rounds):
-                    deltas = [np.linalg.norm( arms_mean[int(obs[t])] - arms_mean[i]) for i in range(config.environment.noArms) if ParetoFront[i] != 0 ]
-                    if(strategy == "mean"):
-                        deltas = np.mean(deltas)
-                    elif(strategy == "min"):
-                         deltas = np.min(deltas)
-                    else:
-                        error
-                    Pareto_regrets += ( deltas/  config.Rounds )         
-                pareto_regrets[x][t] = Pareto_regrets                  
-                    
-    for i, obs in enumerate(obs_best_arms):
-        plt.plot(T,(np.cumsum(pareto_regrets[i])) , label=config.algorthims[i].info_str(latex=True))
-        
-    print_legend = True
-    if(config.environment.Nonstationary ):
-        for point in config.environment.arms_breakpoints:
-            if print_legend:
-                plt.axvline(point, color='red',linestyle='dashed', label='Break point')
-                print_legend = False
-            else:
-                plt.axvline(point, color='red',linestyle='dashed')
-                
-                
-    plt.ylabel("Cumulative Pareto Regrets")
-    plt.legend(loc="upper left", fontsize=6)
-    if(save_path == None):
-        plt.show()
-    else:
-        plt.savefig(save_path+ "cumulative_pareto_regrets_" + strategy +".pgf", dpi = 600)
-
-
+ 
 def plot_arms_means(config,save_path):
     plt.clf()
     colors =  list(mcolors.TABLEAU_COLORS.items())
@@ -288,3 +155,4 @@ def plot_arms_means(config,save_path):
     else:
         plt.savefig(save_path+ "arms_mean.pdf", dpi = 600)
         plt.savefig(save_path+ "arms_mean.pgf", dpi = 600)
+        plt.savefig(save_path+ "arms_mean.png", dpi = 600)
