@@ -1,5 +1,6 @@
 import numpy as np
 
+#Inspired from https://github.com/Ralami1859/Restarted-BOCPD
 class RBOCPD:
     def __init__(self,Horizon,min_gap = 0.1):
         self.alphas = np.array([1.0])
